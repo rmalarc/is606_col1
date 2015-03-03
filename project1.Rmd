@@ -12,16 +12,15 @@ output: html_document
 * [Overview of Datasets](#dataset_overview)
 * [Supply vs Demand](#supply_demand)
 * [Seasonal Variation](#seasonal_variation)
-* [Improving Profits](#improving_profits)
+* [Increasing James' Profit](#improving_profit)
 
 * * *
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,results = 'hide'}
 library("ggplot2")
 library("boot")
-library("plyr")
-#library("psych")
 library("pastecs")
+library("reshape")
 
 pricing <- read.csv(file="./details.csv",head=TRUE,sep=",")
 
@@ -166,8 +165,6 @@ ggplot(totals
 
 ##<a name="seasonal_variation"></a>Seasonal Variation
 
-As we can see from the chart above, even though there seems to be some variation in the order volume by month.
-
 ```{r, echo=FALSE}
 
 qplot(month,demand, data=historical_pivoted, geom=c("boxplot"),
@@ -185,6 +182,8 @@ qplot(day_of_week,demand, data=historical_pivoted, geom=c("boxplot"),
       ylab="Demand")+
   scale_fill_discrete(name="Sandwich")
 ```
+
+As we can see from the charts above, there seems to be some variation in the order volume by month. We need to prove that it is statistically significant.
 
 ### Demand - Analysis of Variance of Seasonal Variation
 The fluctuations in demant lead us to believe that there may be some seasonal fluctiations. We need to test which of these fluctuations are statistically significant. 
@@ -207,9 +206,37 @@ As we can see in the results above, the only statisticaly significant variation 
 
 * * *
 
-##<a name="improving_profits"></a>Improving Profits
+##<a name="improving_profit"></a>Increasing James' Profit
 
-Based on the review above we recomend that James adjustes his production levels to better meet the actual demand as follows:
+The data presents some good opportunities for James to increase his profit by adjusting his supply.
 
+James often produces less sandwiches than the actual demand, particularly turkey and veggie sandwiches. 
+
+In addition, the data suggests that there is some variation in the demand from month to month. Adjusting his supply levels accordingly will help him maximize his profit.
+
+We recomend that James adjustes his production levels according to the following table:
+
+```{r, echo=FALSE}
+
+#calculate the expected demand (use median)
+expected_demand <- data.frame(aggregate(demand ~ sandwich+month
+                                  , data = historical_pivoted
+                                  , FUN = "median"
+                                  )
+                        )
+expected_demand<-rename(expected_demand,c("demand"="expected_demand"))
+
+#bump it up to the ceiling integer
+expected_demand$expected_demand<-ceiling(expected_demand$expected_demand)
+
+expected_demand_by_month <- data.frame(cast(expected_demand
+                                            , month~sandwich
+                                            , first
+                                            ,value="expected_demand"
+                                            )
+                                       )
+
+(expected_demand_by_month)
+```
 
 
