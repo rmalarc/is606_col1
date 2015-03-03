@@ -5,6 +5,16 @@ date: "March 3, 2015"
 output: html_document
 ---
 
+* * *
+
+##Table of Contents
+* [Background](#background)
+* [Overview of Datasets](#dataset_overview)
+* [Supply vs Demand](#supply_demand)
+* [Seasonal Variation](#seasonal_variation)
+* [Improving Profits](#improving_profits)
+
+* * *
 
 ```{r, echo=FALSE}
 library("ggplot2")
@@ -48,13 +58,15 @@ historical_pivoted<-rbind(historical_pivoted
 ```
 
 
-##Overview
+##<a name="background"></a>Background
 
 James has been operating a sandwich stand in the lobby of his office building during the lunch hour for the past two years.He has been tracking sandwich demand over the two years and he has carefully recorded the number of each type of sandwich demanded, the number he brought with him to sell, and his prices for each type of sandwich.
 
 James provided his dataset for analysis.
 
-##Dataset Overview
+* * *
+
+##<a name="dataset_overview"></a>Overview of Datasets
 
 ###sales.csv
 The file `sales.csv` contains the demand and availability by date for each of the three sandwiches that James sells.
@@ -75,8 +87,9 @@ The file contains cost and sale pricing by sandwich type as follows:
 (pricing)
 ```
 
+* * *
 
-##Supply vs Demand
+##<a name="supply_demand"></a>Supply vs Demand
 
 From the plot below we can see that the produciton levels for Turkey and Veggie sandwiches are below the demand.
 
@@ -134,11 +147,15 @@ ggplot(totals
 
 ```
 
-## Seasonal Variation
+* * *
 
-The does not appear to be a statistically significant seasonal / day of the week variation in the data.
+##<a name="seasonal_variation"></a>Seasonal Variation
 
-## Improving Profits
+The does not appear to be a statistically significant variation in the demand by month or day of the week.
+
+* * *
+
+##<a name="improving_profits"></a>Improving Profits
 
 Based on the review above we recomend that James adjustes his production levels to better meet the actual demand as follows:
 
