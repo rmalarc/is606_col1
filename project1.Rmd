@@ -1,0 +1,146 @@
+---
+title: "IS606 - Collaborative Project 1"
+author: "Mauricio Alarcon, Nathan Lim, Simon Elmoudni"
+date: "March 3, 2015"
+output: html_document
+---
+
+
+```{r, echo=FALSE}
+library("ggplot2")
+library("boot")
+library("plyr")
+#library("psych")
+library("pastecs")
+
+pricing <- read.csv(file="./details.csv",head=TRUE,sep=",")
+
+historical_data <- read.csv(file="./sales.csv",head=TRUE,sep=",")
+
+# properly format date
+historical_data$date_dt <- as.POSIXct(historical_data$date, format="%Y-%m-%d")
+historical_data$month <- format(historical_data$date_dt, "%b")
+
+# get month, day_of_week and month_day_of_week to see if there is any
+# type of variation by any of these variables
+historical_data$day_of_week <- weekdays(historical_data$date_dt)
+historical_data$month_day_of_week <- paste(historical_data$month, "-" ,historical_data$day_of_week ) 
+
+
+# pivot the data so we can use it better in GGPLOT
+historical_pivoted<-data.frame(date=historical_data$date_dt,sandwich="Ham"
+                              ,demand=historical_data$demand.ham
+                              ,supply=historical_data$available.ham
+                              )
+historical_pivoted<-rbind(historical_pivoted
+                          ,data.frame(date=historical_data$date_dt
+                                      ,sandwich="Turkey"
+                                      ,demand=historical_data$demand.turkey
+                                      ,supply=historical_data$available.turkey)
+                          )
+historical_pivoted<-rbind(historical_pivoted
+                          ,data.frame(date=historical_data$date_dt
+                                      ,sandwich="Veggie"
+                                      ,demand=historical_data$demand.veggie
+                                      ,supply=historical_data$available.veggie)
+                          )
+
+```
+
+
+##Overview
+
+James has been operating a sandwich stand in the lobby of his office building during the lunch hour for the past two years.He has been tracking sandwich demand over the two years and he has carefully recorded the number of each type of sandwich demanded, the number he brought with him to sell, and his prices for each type of sandwich.
+
+James provided his dataset for analysis.
+
+##Dataset Overview
+
+###sales.csv
+The file `sales.csv` contains the demand and availability by date for each of the three sandwiches that James sells.
+
+```{r}
+
+summary(historical_data[,c("date_dt")])
+
+stat.desc(historical_data[,c("demand.ham","demand.turkey","demand.veggie","available.ham","available.turkey","available.veggie")])
+
+```
+
+As we can see from the data above, the data ranges from 2014/03/03 to 2014/08/29(n=130). In addition, the mean demand for each sandwich type ranges from 22.05 (Ham) to 13.06 (Veggie). The best selling sandwich is Ham
+
+###details.csv
+The file contains cost and sale pricing by sandwich type as follows:
+```{r}
+(pricing)
+```
+
+
+##Supply vs Demand
+
+From the plot below we can see that the produciton levels for Turkey and Veggie sandwiches are below the demand.
+
+```{r, echo=FALSE}
+
+p <- qplot(sandwich,demand, data=historical_pivoted, geom=c("boxplot", "jitter"),
+      fill=sandwich,
+      main="Average Supply and Demand by Sandwich Type",
+      xlab= "Sandwich Type",
+      ylab="Demand")
+p + geom_hline(yintercept = c(mean(historical_data$available.ham)
+                              ,mean(historical_data$available.turkey)
+                              ,mean(historical_data$available.veggie)
+                              )
+               ,color=c("red","darkgreen","blue")
+               ,size=1
+               ,linetype=11
+               ,label = c("Demand Ham", "Demand Turkey", "Demand Veggie")
+               )
+
+```
+
+```{r, echo=FALSE}
+# total the demands and supply
+demand_totals <- data.frame(aggregate(demand ~ sandwich
+                                  , data = historical_pivoted
+                                  , FUN = "sum"
+                                  )
+                        ,"supply_demand"="Demand"
+                        )
+demand_totals<-rename(demand_totals,c("demand"="volume"))
+
+supply_totals <- data.frame(aggregate(supply ~ sandwich
+                                  , data = historical_pivoted
+                                  , FUN = "sum"
+                                  )
+                        ,"supply_demand"="Supply"
+                        )
+supply_totals<-rename(supply_totals,c("supply"="volume"))
+
+totals <- rbind(demand_totals,supply_totals)
+
+
+ggplot(totals
+        ,color=c("red","darkgreen","blue")
+       , aes(factor(sandwich), volume, fill = supply_demand
+             )
+       ) + 
+  geom_bar(stat="identity", position = "dodge",title="") + 
+  scale_fill_brewer(palette = "Set2") +
+  ggtitle("Total Supply and Demand by Sandwich Type") +
+  xlab( "Sandwich") +
+  ylab("Volume") +
+  theme(legend.title=element_blank())
+
+```
+
+## Seasonal Variation
+
+The does not appear to be a statistically significant seasonal / day of the week variation in the data.
+
+## Improving Profits
+
+Based on the review above we recomend that James adjustes his production levels to better meet the actual demand as follows:
+
+
+
