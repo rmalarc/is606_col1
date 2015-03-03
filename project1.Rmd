@@ -29,27 +29,41 @@ historical_data <- read.csv(file="./sales.csv",head=TRUE,sep=",")
 
 # properly format date
 historical_data$date_dt <- as.POSIXct(historical_data$date, format="%Y-%m-%d")
-historical_data$month <- format(historical_data$date_dt, "%b")
+historical_data$month <- factor(format(historical_data$date_dt, "%b")
+                                ,levels=c("Mar","Apr","May","Jun","Jul","Aug"))
 
 # get month, day_of_week and month_day_of_week to see if there is any
 # type of variation by any of these variables
-historical_data$day_of_week <- weekdays(historical_data$date_dt)
+historical_data$day_of_week <- factor(weekdays(historical_data$date_dt)
+                                      ,levels=c("Monday"
+                                                ,"Tuesday"
+                                                ,"Wednesday"
+                                                ,"Thursday"
+                                                ,"Friday")
+                                      )
 historical_data$month_day_of_week <- paste(historical_data$month, "-" ,historical_data$day_of_week ) 
 
 
 # pivot the data so we can use it better in GGPLOT
-historical_pivoted<-data.frame(date=historical_data$date_dt,sandwich="Ham"
+historical_pivoted<-data.frame(date=historical_data$date_dt
+                               ,month=historical_data$month
+                               ,day_of_week=historical_data$day_of_week
+                               ,sandwich="Ham"
                               ,demand=historical_data$demand.ham
                               ,supply=historical_data$available.ham
                               )
 historical_pivoted<-rbind(historical_pivoted
                           ,data.frame(date=historical_data$date_dt
+                                      ,month=historical_data$month
+                                      ,day_of_week=historical_data$day_of_week
                                       ,sandwich="Turkey"
                                       ,demand=historical_data$demand.turkey
                                       ,supply=historical_data$available.turkey)
                           )
 historical_pivoted<-rbind(historical_pivoted
                           ,data.frame(date=historical_data$date_dt
+                                      ,month=historical_data$month
+                                      ,day_of_week=historical_data$day_of_week
                                       ,sandwich="Veggie"
                                       ,demand=historical_data$demand.veggie
                                       ,supply=historical_data$available.veggie)
@@ -151,7 +165,33 @@ ggplot(totals
 
 ##<a name="seasonal_variation"></a>Seasonal Variation
 
-The does not appear to be a statistically significant variation in the demand by month or day of the week.
+As we can see from the chart above, even though there seems to be some variation in the order volume by month.
+
+```{r}
+
+qplot(month,demand, data=historical_pivoted, geom=c("boxplot"),
+      fill=sandwich,
+      main="Average Demand by Sandwich Type and Month",
+      xlab= "Sandwich Type",
+      ylab="Demand")
+```
+
+### Analysis of Variance of Seasonal Variation
+This leads us to see which of these differences are statistically significant. For that matter we then conducted an analysis of variance on the demand by sandwich type and month, day of week and month-day of week. 
+
+The results are as follows:
+
+```{r}
+
+summary(aov(demand ~ sandwich:month+sandwich:day_of_week+sandwich:month:day_of_week
+            ,data=historical_pivoted
+            )
+        )
+```
+
+As we can see in the results above, the only statistical variation in the distribution of the demand is attributed to the sandwich type and month.  
+
+**Based on this result we will use monthly volumne by sandwich type to determine the expected value for the recomendation.**
 
 * * *
 
