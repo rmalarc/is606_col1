@@ -122,7 +122,8 @@ p + geom_hline(yintercept = c(mean(historical_data$available.ham)
                ,size=1
                ,linetype=11
                ,label = c("Demand Ham", "Demand Turkey", "Demand Veggie")
-               )
+               ) +
+  scale_fill_discrete(name="Sandwich")
 
 ```
 
@@ -167,17 +168,28 @@ ggplot(totals
 
 As we can see from the chart above, even though there seems to be some variation in the order volume by month.
 
-```{r}
+```{r, echo=FALSE}
 
 qplot(month,demand, data=historical_pivoted, geom=c("boxplot"),
       fill=sandwich,
       main="Average Demand by Sandwich Type and Month",
-      xlab= "Sandwich Type",
-      ylab="Demand")
+      xlab= "Month",
+      ylab="Demand")+
+  scale_fill_discrete(name="Sandwich")
+
+
+qplot(day_of_week,demand, data=historical_pivoted, geom=c("boxplot"),
+      fill=sandwich,
+      main="Average Demand by Sandwich Type and Day of Week",
+      xlab= "Day of Week",
+      ylab="Demand")+
+  scale_fill_discrete(name="Sandwich")
 ```
 
-### Analysis of Variance of Seasonal Variation
-This leads us to see which of these differences are statistically significant. For that matter we then conducted an analysis of variance on the demand by sandwich type and month, day of week and month-day of week. 
+### Demand - Analysis of Variance of Seasonal Variation
+The fluctuations in demant lead us to believe that there may be some seasonal fluctiations. We need to test which of these fluctuations are statistically significant. 
+
+For that matter we conducted an analysis of variance on the demand by sandwich type and month, day of week and month-day of week. 
 
 The results are as follows:
 
@@ -189,7 +201,7 @@ summary(aov(demand ~ sandwich:month+sandwich:day_of_week+sandwich:month:day_of_w
         )
 ```
 
-As we can see in the results above, the only statistical variation in the distribution of the demand is attributed to the sandwich type and month.  
+As we can see in the results above, the only statisticaly significant variation in the distribution of the demand is due to the sandwich type and month.
 
 **Based on this result we will use monthly volumne by sandwich type to determine the expected value for the recomendation.**
 
