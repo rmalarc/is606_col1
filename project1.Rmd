@@ -13,16 +13,24 @@ output: html_document
 * [Supply vs Demand](#supply_demand)
 * [Seasonal Variation](#seasonal_variation)
 * [Increasing James' Profit](#improving_profit)
+* [Current and Expected Profit](#expected_profit)
+* [Conclusion](#conclusion)
 
 * * *
 
-```{r, echo=FALSE,results = 'hide'}
+```{r, echo=FALSE,results = 'hide', warning=FALSE, message=FALSE}
 library("ggplot2")
 library("boot")
 library("pastecs")
 library("reshape")
+library("lattice")
+library("Hmisc")
 
-pricing <- read.csv(file="./details.csv",head=TRUE,sep=",")
+pricing <- read.csv(file="./details.csv",head=TRUE,sep=",",as.is=TRUE)
+
+#Capitalize sandwich type
+pricing$type <- as.factor(capitalize(pricing$type))
+
 
 historical_data <- read.csv(file="./sales.csv",head=TRUE,sep=",")
 
@@ -75,7 +83,7 @@ historical_pivoted<-rbind(historical_pivoted
 
 James has been operating a sandwich stand in the lobby of his office building during the lunch hour for the past two years.He has been tracking sandwich demand over the two years and he has carefully recorded the number of each type of sandwich demanded, the number he brought with him to sell, and his prices for each type of sandwich.
 
-James provided his dataset for analysis.
+James provided his data set for analysis.
 
 * * *
 
@@ -104,7 +112,7 @@ The file contains cost and sale pricing by sandwich type as follows:
 
 ##<a name="supply_demand"></a>Supply vs Demand
 
-From the plot below we can see that the produciton levels for Turkey and Veggie sandwiches are below the demand.
+From the plot below we can see that the production levels for Turkey and Veggie sandwiches are below the demand.
 
 ```{r, echo=FALSE}
 
@@ -163,32 +171,15 @@ ggplot(totals
 
 * * *
 
-##<a name="seasonal_variation"></a>Seasonal Variation
+##<a name="seasonal_variation"></a>Seasonal Variation of Demand
 
-```{r, echo=FALSE}
+Before we proceed any further, we want to know if there are any seasonal statistically significant variations. We want to prove the significance of any of the following variations by sandwich type:
 
-qplot(month,demand, data=historical_pivoted, geom=c("boxplot"),
-      fill=sandwich,
-      main="Average Demand by Sandwich Type and Month",
-      xlab= "Month",
-      ylab="Demand")+
-  scale_fill_discrete(name="Sandwich")
+* From day of the week to day of the week (inter-day - sandwich:day_of_week)
+* From month to month (inter-month - sandwich:month)
+* From month and day of the week to month and day of the week (inter-month-day - sandwich:month:day_of_week).
 
-
-qplot(day_of_week,demand, data=historical_pivoted, geom=c("boxplot"),
-      fill=sandwich,
-      main="Average Demand by Sandwich Type and Day of Week",
-      xlab= "Day of Week",
-      ylab="Demand")+
-  scale_fill_discrete(name="Sandwich")
-```
-
-As we can see from the charts above, there seems to be some variation in the order volume by month. We need to prove that it is statistically significant.
-
-### Demand - Analysis of Variance of Seasonal Variation
-The fluctuations in demant lead us to believe that there may be some seasonal fluctiations. We need to test which of these fluctuations are statistically significant. 
-
-For that matter we conducted an analysis of variance on the demand by sandwich type and month, day of week and month-day of week. 
+We conducted an analysis of variance of the demand in order to accept or reject each of our hypothesis. 
 
 The results are as follows:
 
@@ -200,9 +191,53 @@ summary(aov(demand ~ sandwich:month+sandwich:day_of_week+sandwich:month:day_of_w
         )
 ```
 
-As we can see in the results above, the only statisticaly significant variation in the distribution of the demand is due to the sandwich type and month.
+As we can see in the results above, the only statistically significant variation in the distribution of the demand is due to the sandwich type and month.
 
-**Based on this result we will use monthly volumne by sandwich type to determine the expected value for the recomendation.**
+The chart below illustrate the actual fluctuations of the demand by sandwich type and month:
+
+```{r, echo=FALSE}
+
+qplot(month,demand, data=historical_pivoted, geom=c("boxplot"),
+      fill=sandwich,
+      main="Average Demand by Sandwich Type and Month",
+      xlab= "Month",
+      ylab="Demand")+
+  scale_fill_discrete(name="Sandwich")
+
+#qplot(demand, data=historical_pivoted[historical_pivoted$sandwich=="Ham",], 
+#      geom=c("density"),
+#      main="Distribution of Ham Sandwich Demand by Month",
+#      xlab="Demand",
+#      xlim=c(0,40),
+#      ylab="Density",
+#      facets=month~sandwich, fill=month)+scale_fill_discrete(name="Month")
+
+#qplot(demand, data=historical_pivoted[historical_pivoted$sandwich=="Turkey",], 
+#      geom=c("density"),
+#      main="Distribution of Turkey Sandwich Demand by Month",
+#      xlab= "Demand",
+#      xlim=c(0,40),
+#      ylab="Density",
+#      facets=month~sandwich, fill=month)+scale_fill_discrete(name="Month")
+      
+#qplot(demand, data=historical_pivoted[historical_pivoted$sandwich=="Veggie",], 
+#      geom=c("density"),
+#      main="Distribution of Veggie Sandwich Demand by Month",
+#      xlab= "Demand",
+#      xlim=c(0,40),
+#      ylab="Density",
+#      facets=month~sandwich, fill=month)+scale_fill_discrete(name="Month")
+
+#qplot(day_of_week,demand, data=historical_pivoted, geom=c("boxplot"),
+#      fill=sandwich,
+#      main="Average Demand by Sandwich Type and Day of Week",
+#      xlab= "Day of Week",
+#      ylab="Demand")+
+#  scale_fill_discrete(name="Sandwich")
+```
+
+**Based on these findings, we will use monthly volumne by sandwich type to make our recommendations.**
+
 
 * * *
 
@@ -212,9 +247,9 @@ The data presents some good opportunities for James to increase his profit by ad
 
 James often produces less sandwiches than the actual demand, particularly turkey and veggie sandwiches. 
 
-In addition, the data suggests that there is some variation in the demand from month to month. Adjusting his supply levels accordingly will help him maximize his profit.
+In addition, we established that there exists variation in the demand from month to month. Adjusting his supply levels accordingly will help him maximize his profit.
 
-We recomend that James adjustes his production levels according to the following table:
+We recommend that James adjusts his production levels according to the following table:
 
 ```{r, echo=FALSE}
 
@@ -229,14 +264,62 @@ expected_demand<-rename(expected_demand,c("demand"="expected_demand"))
 #bump it up to the ceiling integer
 expected_demand$expected_demand<-ceiling(expected_demand$expected_demand)
 
-expected_demand_by_month <- data.frame(cast(expected_demand
+expected_demand_output_table <- data.frame(cast(expected_demand
                                             , month~sandwich
                                             , first
                                             ,value="expected_demand"
                                             )
                                        )
 
-(expected_demand_by_month)
+(expected_demand_output_table)
 ```
 
+##<a name="expected_profit"></a>Current and Expected Profit
 
+The table below presents James' current and expected profits based on the recomended production levels.
+
+```{r, echo=FALSE}
+
+#join the historical data with the expected demand
+historical_pivoted <- merge(historical_pivoted, expected_demand, by=c("sandwich","month"))
+
+#join with pricing info
+historical_pivoted <- merge(historical_pivoted, pricing, by.x="sandwich",by.y="type")
+
+
+# calculate expected sales based on expected demand vs actually sold
+historical_pivoted$sales_current <- pmin(historical_pivoted$supply,historical_pivoted$demand)
+
+historical_pivoted$sales_expected <- pmin(historical_pivoted$expected_demand,historical_pivoted$demand)
+
+# calculate profit per day based on current and expected demand
+historical_pivoted$profit_current <- historical_pivoted$sales_current * historical_pivoted$price - historical_pivoted$supply*historical_pivoted$cost
+
+historical_pivoted$profit_expected <- historical_pivoted$sales_expected * historical_pivoted$price - historical_pivoted$expected_demand*historical_pivoted$cost
+
+#calculate profit summary totals by sandwich type
+profit_summary <- data.frame(aggregate(cbind(profit_current,profit_expected)~sandwich
+                                  , data = historical_pivoted
+                                  , FUN = "sum"
+                                  )
+                        )
+
+# calculate grand totals
+profit_grand_total <- data.frame(sandwich="TOTAL"
+                                 ,profit_current=sum(historical_pivoted$profit_current)
+                                 ,profit_expected=sum(historical_pivoted$profit_expected)
+                                 )
+
+profit_summary <- rbind(profit_summary,profit_grand_total)
+profit_summary$increase <- with(profit_summary, sprintf("%3.1f%%"
+                                   ,100*(profit_expected-profit_current)/profit_current))
+(profit_summary)
+```
+
+The expected profit was calculated by applying the recomended production levels to the provided historical data. As we can see, James' profit would have increased by **8.4%**.
+
+* * *
+
+##<a name="conclusion"></a>Conclusion
+
+need help!!!!!!
