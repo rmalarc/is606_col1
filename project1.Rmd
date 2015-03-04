@@ -26,11 +26,17 @@ library("reshape")
 library("lattice")
 library("Hmisc")
 
-pricing <- read.csv(file.choose(),head=TRUE,sep=",",as.is=TRUE)
+################## IF RUNNING IN RSTUDIO, UNCOMMENT THE TWO LINES BELOW ####################
+#pricing <- read.csv(file.choose(),head=TRUE,sep=",",as.is=TRUE)
+#historical_data <- read.csv(file.choose(),head=TRUE,sep=",")
+
+################## WHEN READY TO KNIT, UNCOMMENT THE THREE LINES BELOW ##################
+######################### AND COMMENT THE TWO ABOVE #####################################
+setwd("/Users/malarcon/Google Drive/CUNY/IS606/collaborative1")
+pricing <- read.csv("./details.csv",head=TRUE,sep=",",as.is=TRUE)
+historical_data <- read.csv("./sales.csv",head=TRUE,sep=",")
 
 #Capitalize sandwich type
-historical_data <- read.csv(file.choose(),head=TRUE,sep=",")
-head(pricing)
 pricing$type <- as.factor(capitalize(pricing$type))
 
 # properly format date
@@ -270,7 +276,7 @@ expected_demand_output_table <- data.frame(cast(expected_demand
 
 ##<a name="expected_profit"></a>Current and Expected Profit
 
-The table below shows James' current profit and expected profit based on the recomended production levels.
+The table below shows James' current profit and expected profit based on the recommended production levels.
 
 ```{r, echo=FALSE}
 
@@ -311,11 +317,11 @@ profit_summary$increase <- with(profit_summary, sprintf("%3.1f%%"
 (profit_summary)
 ```
 
-The expected profit was calculated by applying the recomended production levels to the provided historical data. As we can see, James' profit would have increased by **8.4%**.
+The expected profit was calculated by applying the recommended production levels to the provided historical data. As we can see, James' profit would have increased by **8.4%**.
 
 * * *
 
 ##<a name="conclusion"></a>Conclusion
 
-This recommendation is based on the data that James collected from Mar.2013 to Aug.2013. As we analysed above, the main reason that James could not maximise his profit was on supply deficiency of Turkey and Veggie sandwiches.
+This recommendation is based on the data that James collected from Mar.2013 to Aug.2013. As we analysed above, the main reason that James could not maximize his profit was on supply deficiency of Turkey and Veggie sandwiches.
 Therefore, if he adjust the supply like we recommended, he would make more money, about $180 monthly
