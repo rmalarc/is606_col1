@@ -220,13 +220,13 @@ qplot(month,demand, data=historical_pivoted, geom=c("boxplot"),
 #      ylab="Density",
 #      facets=month~sandwich, fill=month)+scale_fill_discrete(name="Month")
       
-#qplot(demand, data=historical_pivoted[historical_pivoted$sandwich=="Veggie",], 
-#      geom=c("density"),
-#      main="Distribution of Veggie Sandwich Demand by Month",
-#      xlab= "Demand",
-#      xlim=c(0,40),
-#      ylab="Density",
-#      facets=month~sandwich, fill=month)+scale_fill_discrete(name="Month")
+qplot(demand, data=historical_pivoted, 
+      geom=c("density"),
+      main="Distribution of Veggie Sandwich Demand by Month",
+      xlab= "Demand",
+      xlim=c(0,40),
+      ylab="Density",
+      facets=month~sandwich, fill=month)+scale_fill_discrete(name="Month")
 
 #qplot(day_of_week,demand, data=historical_pivoted, geom=c("boxplot"),
 #      fill=sandwich,
