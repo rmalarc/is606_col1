@@ -26,13 +26,12 @@ library("reshape")
 library("lattice")
 library("Hmisc")
 
-pricing <- read.csv(file="./details.csv",head=TRUE,sep=",",as.is=TRUE)
+pricing <- read.csv(file.choose(),head=TRUE,sep=",",as.is=TRUE)
 
 #Capitalize sandwich type
+historical_data <- read.csv(file.choose(),head=TRUE,sep=",")
+head(pricing)
 pricing$type <- as.factor(capitalize(pricing$type))
-
-
-historical_data <- read.csv(file="./sales.csv",head=TRUE,sep=",")
 
 # properly format date
 historical_data$date_dt <- as.POSIXct(historical_data$date, format="%Y-%m-%d")
@@ -100,10 +99,10 @@ stat.desc(historical_data[,c("demand.ham","demand.turkey","demand.veggie","avail
 
 ```
 
-As we can see from the data above, the data ranges from 2014/03/03 to 2014/08/29(n=130). In addition, the mean demand for each sandwich type ranges from 22.05 (Ham) to 13.06 (Veggie). The best selling sandwich is Ham
+As we can see from the data above, mean-demands for each sandwich type are 15.94(Ham), 22.05(Turkey) and 13.06(Veggie). The best selling sandwich is Turkey
 
 ###details.csv
-The file contains cost and sale pricing by sandwich type as follows:
+This file contains cost and sale prices according to sandwich type:
 ```{r}
 (pricing)
 ```
@@ -112,7 +111,7 @@ The file contains cost and sale pricing by sandwich type as follows:
 
 ##<a name="supply_demand"></a>Supply vs Demand
 
-From the plot below we can see that the production levels for Turkey and Veggie sandwiches are below the demand.
+From the plot below we can see that the productions of Turkey and Veggie sandwiches are below the demand.
 
 ```{r, echo=FALSE}
 
@@ -135,7 +134,7 @@ p + geom_hline(yintercept = c(mean(historical_data$available.ham)
 ```
 
 ```{r, echo=FALSE}
-# total the demands and supply
+# The total demand and supply
 demand_totals <- data.frame(aggregate(demand ~ sandwich
                                   , data = historical_pivoted
                                   , FUN = "sum"
@@ -154,9 +153,7 @@ supply_totals<-rename(supply_totals,c("supply"="volume"))
 
 totals <- rbind(demand_totals,supply_totals)
 
-
 ggplot(totals
-        ,color=c("red","darkgreen","blue")
        , aes(factor(sandwich), volume, fill = supply_demand
              )
        ) + 
@@ -191,7 +188,7 @@ summary(aov(demand ~ sandwich:month+sandwich:day_of_week+sandwich:month:day_of_w
         )
 ```
 
-As we can see in the results above, the only statistically significant variation in the distribution of the demand is due to the sandwich type and month.
+As we can see in the results above, the only statistically significant variation(normally p<0.05) in the distribution of the demand is the month.
 
 The chart below illustrate the actual fluctuations of the demand by sandwich type and month:
 
@@ -226,7 +223,7 @@ qplot(demand, data=historical_pivoted,
       xlab= "Demand",
       xlim=c(0,40),
       ylab="Density",
-      facets=month~sandwich, fill=month)+scale_fill_discrete(name="Month")
+      facets=month~sandwich, fill=sandwich)+scale_fill_discrete(name="sandwich")
 
 #qplot(day_of_week,demand, data=historical_pivoted, geom=c("boxplot"),
 #      fill=sandwich,
@@ -236,20 +233,17 @@ qplot(demand, data=historical_pivoted,
 #  scale_fill_discrete(name="Sandwich")
 ```
 
-**Based on these findings, we will use monthly volumne by sandwich type to make our recommendations.**
+**Based on these findings, we will recommend monthly sandwich produtions to James.**
 
 
 * * *
 
 ##<a name="improving_profit"></a>Increasing James' Profit
 
-The data presents some good opportunities for James to increase his profit by adjusting his supply.
-
 James often produces less sandwiches than the actual demand, particularly turkey and veggie sandwiches. 
+We also, found that there exists variation in the demand from month to month. Therefore, adjusting his supply levels according to this will help him maximize his profit.
 
-In addition, we established that there exists variation in the demand from month to month. Adjusting his supply levels accordingly will help him maximize his profit.
-
-We recommend that James adjusts his production levels according to the following table:
+We recommend that James be adjusting his production levels like the following table:
 
 ```{r, echo=FALSE}
 
@@ -276,7 +270,7 @@ expected_demand_output_table <- data.frame(cast(expected_demand
 
 ##<a name="expected_profit"></a>Current and Expected Profit
 
-The table below presents James' current and expected profits based on the recomended production levels.
+The table below shows James' current profit and expected profit based on the recomended production levels.
 
 ```{r, echo=FALSE}
 
@@ -311,6 +305,7 @@ profit_grand_total <- data.frame(sandwich="TOTAL"
                                  )
 
 profit_summary <- rbind(profit_summary,profit_grand_total)
+
 profit_summary$increase <- with(profit_summary, sprintf("%3.1f%%"
                                    ,100*(profit_expected-profit_current)/profit_current))
 (profit_summary)
@@ -322,4 +317,5 @@ The expected profit was calculated by applying the recomended production levels 
 
 ##<a name="conclusion"></a>Conclusion
 
-need help!!!!!!what should i type?
+This recommendation is based on the data that James collected from Mar.2013 to Aug.2013. As we analysed above, the main reason that James could not maximise his profit was on supply deficiency of Turkey and Veggie sandwiches.
+Therefore, if he adjust the supply like we recommended, he would make more money, about $180 monthly
