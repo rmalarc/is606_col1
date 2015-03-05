@@ -25,16 +25,14 @@ library("pastecs")
 library("reshape")
 library("lattice")
 library("Hmisc")
+library("RCurl")
 
-################## IF RUNNING IN RSTUDIO, UNCOMMENT THE TWO LINES BELOW ####################
-#pricing <- read.csv(file.choose(),head=TRUE,sep=",",as.is=TRUE)
-#historical_data <- read.csv(file.choose(),head=TRUE,sep=",")
+# get files from CSV in github
+pricing_csv <- getURL("https://raw.githubusercontent.com/rmalarc/is606_col1/master/details.csv")
+pricing <- read.csv(text=pricing_csv,head=TRUE,sep=",",as.is=TRUE)
 
-################## WHEN READY TO KNIT, UNCOMMENT THE THREE LINES BELOW ##################
-######################### AND COMMENT THE TWO ABOVE #####################################
-setwd("/Users/malarcon/Google Drive/CUNY/IS606/collaborative1")
-pricing <- read.csv("./details.csv",head=TRUE,sep=",",as.is=TRUE)
-historical_data <- read.csv("./sales.csv",head=TRUE,sep=",")
+historical_csv <- getURL("https://raw.githubusercontent.com/rmalarc/is606_col1/master/sales.csv")
+historical_data <- read.csv(text=historical_csv,head=TRUE,sep=",",as.is=TRUE)
 
 #Capitalize sandwich type
 pricing$type <- as.factor(capitalize(pricing$type))
