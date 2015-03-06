@@ -1,6 +1,6 @@
 ---
 title: "IS606 - Collaborative Project 1"
-author: "Mauricio Alarcon, Nathan Lim, Simon Elmoudni"
+author: "Mauricio Alarcon, Nathan Lim, Mohamed Elmoudni"
 date: "March 3, 2015"
 output: html_document
 ---
@@ -223,7 +223,7 @@ qplot(month,demand, data=historical_pivoted, geom=c("boxplot"),
       
 qplot(demand, data=historical_pivoted, 
       geom=c("density"),
-      main="Distribution of Veggie Sandwich Demand by Month",
+      main="Distribution of Sandwich Demand by Month",
       xlab= "Demand",
       xlim=c(0,40),
       ylab="Density",
